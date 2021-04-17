@@ -14,7 +14,7 @@ public class SecurityLineProperties {
 
 	public static final String PREFIX = "spring.security.line";
 
-	/** Whether Enable Google AccessToken Authentication. */
+	/** Whether Enable Line AccessToken Authentication. */
 	private boolean enabled = false;
 
 }

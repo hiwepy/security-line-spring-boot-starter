@@ -29,8 +29,10 @@ import org.springframework.security.boot.biz.authentication.nested.MatchedAuthen
 import org.springframework.security.boot.biz.exception.AuthResponse;
 import org.springframework.security.boot.biz.exception.AuthResponseCode;
 import org.springframework.security.boot.line.SpringSecurityLineMessageSource;
-import org.springframework.security.boot.line.exception.LineAcceccTokenNotFoundException;
-import org.springframework.security.boot.line.exception.LineAccessTokenVerifierException;
+import org.springframework.security.boot.line.exception.LineAccessTokenExpiredException;
+import org.springframework.security.boot.line.exception.LineAccessTokenIncorrectException;
+import org.springframework.security.boot.line.exception.LineAccessTokenInvalidException;
+import org.springframework.security.boot.line.exception.LineAccessTokenNotFoundException;
 import org.springframework.security.boot.utils.SubjectUtils;
 import org.springframework.security.core.AuthenticationException;
 
@@ -42,8 +44,9 @@ public class LineMatchedAuthenticationEntryPoint implements MatchedAuthenticatio
 	
 	@Override
 	public boolean supports(AuthenticationException e) {
-		return SubjectUtils.isAssignableFrom(e.getClass(), LineAcceccTokenNotFoundException.class, 
-				LineAccessTokenVerifierException.class);
+		return SubjectUtils.isAssignableFrom(e.getClass(), LineAccessTokenExpiredException.class, 
+				LineAccessTokenIncorrectException.class, LineAccessTokenInvalidException.class,
+				LineAccessTokenNotFoundException.class );
 	}
 
 	@Override
@@ -54,12 +57,18 @@ public class LineMatchedAuthenticationEntryPoint implements MatchedAuthenticatio
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 		
-		if (e instanceof LineAcceccTokenNotFoundException) {
-			JSONObject.writeJSONString(response.getWriter(), AuthResponse.of(AuthResponseCode.SC_AUTHZ_CODE_REQUIRED.getCode(), 
-					messages.getMessage(AuthResponseCode.SC_AUTHZ_CODE_REQUIRED.getMsgKey(), e.getMessage())));
-		} else if (e instanceof LineAccessTokenVerifierException) {
+		if (e instanceof LineAccessTokenExpiredException) {
+			JSONObject.writeJSONString(response.getWriter(), AuthResponse.of(AuthResponseCode.SC_AUTHZ_CODE_EXPIRED.getCode(), 
+					messages.getMessage(AuthResponseCode.SC_AUTHZ_CODE_EXPIRED.getMsgKey(), e.getMessage())));
+		} else if (e instanceof LineAccessTokenIncorrectException) {
+			JSONObject.writeJSONString(response.getWriter(), AuthResponse.of(AuthResponseCode.SC_AUTHZ_CODE_INCORRECT.getCode(), 
+					messages.getMessage(AuthResponseCode.SC_AUTHZ_CODE_INCORRECT.getMsgKey(), e.getMessage())));
+		} else if (e instanceof LineAccessTokenInvalidException) {
 			JSONObject.writeJSONString(response.getWriter(), AuthResponse.of(AuthResponseCode.SC_AUTHZ_CODE_INVALID.getCode(), 
 					messages.getMessage(AuthResponseCode.SC_AUTHZ_CODE_INVALID.getMsgKey(), e.getMessage())));
+		} else if (e instanceof LineAccessTokenNotFoundException) {
+			JSONObject.writeJSONString(response.getWriter(), AuthResponse.of(AuthResponseCode.SC_AUTHZ_CODE_REQUIRED.getCode(), 
+					messages.getMessage(AuthResponseCode.SC_AUTHZ_CODE_REQUIRED.getMsgKey(), e.getMessage())));
 		}
 	}
 	

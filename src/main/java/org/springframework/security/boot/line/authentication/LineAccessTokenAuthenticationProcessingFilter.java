@@ -16,9 +16,6 @@
 package org.springframework.security.boot.line.authentication;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.Collections;
-import java.util.Objects;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -27,100 +24,100 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.boot.biz.authentication.AuthenticationProcessingFilter;
-import org.springframework.security.boot.line.exception.LineAcceccTokenNotFoundException;
-import org.springframework.security.boot.line.exception.LineAccessTokenVerifierException;
+import org.springframework.security.boot.line.exception.LineAccessTokenIncorrectException;
+import org.springframework.security.boot.line.exception.LineAccessTokenNotFoundException;
 import org.springframework.security.boot.utils.WebUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.gson.GsonFactory;
+
+import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Line AccessToken 登录授权 (authorization)过滤器
  */
+@Slf4j
 public class LineAccessTokenAuthenticationProcessingFilter extends AuthenticationProcessingFilter {
-
+	
+	/**
+	 * Get user profile
+	 * https://developers.line.biz/en/reference/line-login/#profile
+	 */
+	private static String USER_PROFILE_URL = "https://api.line.me/v2/profile";
+	
 	/**
 	 * HTTP Authorization Param, equal to <code>accessToken</code>
 	 */
 	public static final String AUTHORIZATION_PARAM = "accessToken";
 	private ObjectMapper objectMapper = new ObjectMapper();
-	private HttpTransport transport = new NetHttpTransport();
-	private JsonFactory jsonFactory = new GsonFactory();
 	private String authorizationParamName = AUTHORIZATION_PARAM;
-	private String clientId;
+    private OkHttpClient okhttp3Client;
 	
-    public LineAccessTokenAuthenticationProcessingFilter(ObjectMapper objectMapper) {
-    	super(new AntPathRequestMatcher("/login/google"));
+    public LineAccessTokenAuthenticationProcessingFilter(ObjectMapper objectMapper, OkHttpClient okhttp3Client) {
+    	super(new AntPathRequestMatcher("/login/line"));
     	this.objectMapper = objectMapper;
+    	this.okhttp3Client = okhttp3Client;
     }
 
     @Override
     public Authentication doAttemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException, IOException, ServletException {
  
-    	String idTokenString = "";
+    	String accessToken = "";
     	
 		// Post && JSON
 		if(WebUtils.isObjectRequest(request)) {
-			
 			LineAccessTokenLoginRequest loginRequest = objectMapper.readValue(request.getReader(), LineAccessTokenLoginRequest.class);
-			idTokenString = loginRequest.getAccessToken();
-
+			accessToken = loginRequest.getAccessToken();
 		} else {
-			
-			idTokenString = this.obtainAccessToken(request);
-	 		
+			accessToken = this.obtainAccessToken(request);
 		}
-
-		if (idTokenString == null) {
-			idTokenString = "";
+		if (accessToken == null) {
+			accessToken = "";
 		}
+		accessToken = accessToken.trim();
 		
-		idTokenString = idTokenString.trim();
-		
-		if(StringUtils.isBlank(idTokenString)) {
-			throw new LineAcceccTokenNotFoundException("accessToken not provided");
+		if(StringUtils.isBlank(accessToken)) {
+			throw new LineAccessTokenNotFoundException("accessToken not provided");
 		}
 		
+		long start = System.currentTimeMillis();
+		LineAccessTokenProfile profile = null;
 		try {
-			
-			GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder( transport, jsonFactory)
-			    // Specify the CLIENT_ID of the app that accesses the backend:
-			    .setAudience(Collections.singletonList(clientId))
-			    // Or, if multiple clients access the backend:
-			    //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
-			    .build();
 
-			GoogleIdToken idToken = verifier.verify(idTokenString);
-			if (Objects.isNull(idToken)) {
-				throw new LineAccessTokenVerifierException(" Google Id Token Invalid ");
-			}
-			
-			LineAccessTokenAuthenticationToken authRequest = new LineAccessTokenAuthenticationToken(idToken, idTokenString);
-			authRequest.setAppId(this.obtainAppId(request));
-			authRequest.setAppChannel(this.obtainAppChannel(request));
-			authRequest.setAppVersion(this.obtainAppVersion(request));
-			authRequest.setUid(this.obtainUid(request));
-			authRequest.setLongitude(this.obtainLongitude(request));
-			authRequest.setLatitude(this.obtainLatitude(request));
-			authRequest.setSign(this.obtainSign(request));
-			
-			// Allow subclasses to set the "details" property
-			setDetails(request, authRequest);
+            Request request1 = new Request.Builder().url(USER_PROFILE_URL)
+					.header("Authorization", "Bearer ".concat(accessToken)).build();
+            Response response1 = okhttp3Client.newCall(request1).execute();
+            if (response1.isSuccessful()) {
+                String content = response1.body().string();
+                log.debug("Request Success: code : {}, body : {} , use time : {} ", response1.code(), content, System.currentTimeMillis() - start);
+                profile = JSONObject.parseObject(content, LineAccessTokenProfile.class);
+            }
+            
+        } catch (Exception e) {
+            log.error("Request Failure : {}, use time : {} ", e.getMessage(), System.currentTimeMillis() - start);
+            throw new LineAccessTokenIncorrectException(" Line accessToken Invalid ");
+        }
+		
+		LineAccessTokenAuthenticationToken authRequest = new LineAccessTokenAuthenticationToken(profile, accessToken);
+		authRequest.setAppId(this.obtainAppId(request));
+		authRequest.setAppChannel(this.obtainAppChannel(request));
+		authRequest.setAppVersion(this.obtainAppVersion(request));
+		authRequest.setUid(this.obtainUid(request));
+		authRequest.setLongitude(this.obtainLongitude(request));
+		authRequest.setLatitude(this.obtainLatitude(request));
+		authRequest.setSign(this.obtainSign(request));
+		
+		// Allow subclasses to set the "details" property
+		setDetails(request, authRequest);
 
-			return this.getAuthenticationManager().authenticate(authRequest);
-			
-		} catch (GeneralSecurityException e) {
-			throw new LineAccessTokenVerifierException(" Google Id Token Verifier Exception : ", e);
-		}
+		return this.getAuthenticationManager().authenticate(authRequest);
 
     }
     
@@ -140,30 +137,6 @@ public class LineAccessTokenAuthenticationProcessingFilter extends Authenticatio
 
 	public void setAuthorizationParamName(String authorizationParamName) {
 		this.authorizationParamName = authorizationParamName;
-	}
-
-	public HttpTransport getTransport() {
-		return transport;
-	}
-
-	public void setTransport(HttpTransport transport) {
-		this.transport = transport;
-	}
-
-	public JsonFactory getJsonFactory() {
-		return jsonFactory;
-	}
-
-	public void setJsonFactory(JsonFactory jsonFactory) {
-		this.jsonFactory = jsonFactory;
-	}
-
-	public String getClientId() {
-		return clientId;
-	}
-
-	public void setClientId(String clientId) {
-		this.clientId = clientId;
 	}
 
 }
