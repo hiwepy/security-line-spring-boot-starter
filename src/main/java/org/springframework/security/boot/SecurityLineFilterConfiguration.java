@@ -78,7 +78,8 @@ public class SecurityLineFilterConfiguration {
    				ObjectProvider<MatchedAuthenticationSuccessHandler> authenticationSuccessHandlerProvider,
    				ObjectProvider<MatchedAuthenticationFailureHandler> authenticationFailureHandlerProvider,
    				ObjectProvider<ObjectMapper> objectMapperProvider,
-   				ObjectProvider<OkHttpClient> okhttp3ClientProvider
+   				ObjectProvider<OkHttpClient> okhttp3ClientProvider,
+   				ObjectProvider<RememberMeServices> rememberMeServicesProvider
    				
 				) {
 			
@@ -104,7 +105,7 @@ public class SecurityLineFilterConfiguration {
    		        
    			});
    			this.requestCache = super.requestCache();
-   			this.rememberMeServices = super.rememberMeServices();
+   			this.rememberMeServices = rememberMeServicesProvider.getIfAvailable();
    			this.sessionAuthenticationStrategy = super.sessionAuthenticationStrategy();
 		}
 
@@ -118,7 +119,7 @@ public class SecurityLineFilterConfiguration {
 			 */
 			PropertyMapper map = PropertyMapper.get().alwaysApplyingWhenNonNull();
 			
-			map.from(authcProperties.getSessionMgt().isAllowSessionCreation()).to(authenticationFilter::setAllowSessionCreation);
+			map.from(getSessionMgtProperties().isAllowSessionCreation()).to(authenticationFilter::setAllowSessionCreation);
 			
 			map.from(authenticationManagerBean()).to(authenticationFilter::setAuthenticationManager);
 			map.from(authenticationSuccessHandler).to(authenticationFilter::setAuthenticationSuccessHandler);
@@ -142,7 +143,8 @@ public class SecurityLineFilterConfiguration {
 	        	.authenticationEntryPoint(authenticationEntryPoint)
 	        	.and()
 	        	.httpBasic()
-	        	.disable()
+	        	.authenticationEntryPoint(authenticationEntryPoint)
+	        	.and()
 	        	.antMatcher(authcProperties.getPathPattern())
 	        	.addFilterBefore(localeContextFilter, UsernamePasswordAuthenticationFilter.class)
    	        	.addFilterBefore(authenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class); 
