@@ -16,7 +16,9 @@
 package org.springframework.security.boot;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.security.boot.biz.property.SecurityAuthcProperties;
+import org.springframework.security.boot.biz.property.SecurityLogoutProperties;
 import org.springframework.security.boot.line.authentication.LineAccessTokenAuthenticationProcessingFilter;
 
 import lombok.Getter;
@@ -33,10 +35,13 @@ public class SecurityLineAuthcProperties extends SecurityAuthcProperties {
 
 	/** Authorization Path Pattern */
 	private String pathPattern = "/login/line";
-	
+
 	/** the token parameter name. Defaults to "token". */
 	private String authorizationParamName = LineAccessTokenAuthenticationProcessingFilter.AUTHORIZATION_PARAM;
 
 	private String clientId;
+
+	@NestedConfigurationProperty
+	private SecurityLogoutProperties logout = new SecurityLogoutProperties();
 
 }
