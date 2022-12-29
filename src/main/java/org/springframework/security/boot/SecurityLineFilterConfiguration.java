@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.PropertyMapper;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,16 +26,21 @@ import org.springframework.security.boot.line.authentication.LineAccessTokenAuth
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.RedirectStrategy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
+import org.springframework.security.web.savedrequest.RequestCache;
 
 @Configuration
 @AutoConfigureBefore(name = {
@@ -47,18 +53,21 @@ public class SecurityLineFilterConfiguration {
 
 	@Configuration
 	@EnableConfigurationProperties({ SecurityLineProperties.class, SecurityLineAuthcProperties.class, SecurityBizProperties.class })
-	@Order(SecurityProperties.DEFAULT_FILTER_ORDER + 5)
-	static class LineWebSecurityConfigurerAdapter extends WebSecurityBizConfigurerAdapter {
+	static class LineWebSecurityConfigurerAdapter extends SecurityFilterChainConfigurer {
 
-	    private final SecurityLineAuthcProperties authcProperties;
+	    private final SecurityBizProperties bizProperties;
+		private final SecurityLineAuthcProperties authcProperties;
 
 	    private final AuthenticationEntryPoint authenticationEntryPoint;
 	    private final AuthenticationSuccessHandler authenticationSuccessHandler;
 	    private final AuthenticationFailureHandler authenticationFailureHandler;
+		private final AuthenticationManager authenticationManager;
 	    private final ObjectMapper objectMapper;
     	private final RememberMeServices rememberMeServices;
 		private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
 		private final LocaleContextFilter localeContextFilter;
+		private final LogoutHandler logoutHandler;
+		private final LogoutSuccessHandler logoutSuccessHandler;
 		private final OkHttpClient okhttp3Client;
 
 		public LineWebSecurityConfigurerAdapter(
@@ -66,29 +75,37 @@ public class SecurityLineFilterConfiguration {
 				SecurityBizProperties bizProperties,
 				SecurityLineAuthcProperties authcProperties,
 
-				ObjectProvider<LocaleContextFilter> localeContextProvider,
 				ObjectProvider<AuthenticationProvider> authenticationProvider,
    				ObjectProvider<AuthenticationListener> authenticationListenerProvider,
 				ObjectProvider<AuthenticationManager> authenticationManagerProvider,
    				ObjectProvider<MatchedAuthenticationEntryPoint> authenticationEntryPointProvider,
    				ObjectProvider<MatchedAuthenticationSuccessHandler> authenticationSuccessHandlerProvider,
    				ObjectProvider<MatchedAuthenticationFailureHandler> authenticationFailureHandlerProvider,
+				ObjectProvider<LocaleContextFilter> localeContextProvider,
+				ObjectProvider<LogoutHandler> logoutHandlerProvider,
+				ObjectProvider<LogoutSuccessHandler> logoutSuccessHandlerProvider,
    				ObjectProvider<ObjectMapper> objectMapperProvider,
    				ObjectProvider<OkHttpClient> okhttp3ClientProvider,
+				ObjectProvider<RedirectStrategy> redirectStrategyProvider,
+				ObjectProvider<RequestCache> requestCacheProvider,
    				ObjectProvider<RememberMeServices> rememberMeServicesProvider,
    				ObjectProvider<SessionAuthenticationStrategy> sessionAuthenticationStrategyProvider
 
 				) {
 
-			super(bizProperties, authcProperties, authenticationProvider.stream().collect(Collectors.toList()), authenticationManagerProvider.getIfAvailable());
+			super(bizProperties, redirectStrategyProvider.getIfAvailable(), requestCacheProvider.getIfAvailable());
 
 			this.authcProperties = authcProperties;
+			this.bizProperties = bizProperties;
 
-			this.localeContextFilter = localeContextProvider.getIfAvailable();
    			List<AuthenticationListener> authenticationListeners = authenticationListenerProvider.stream().collect(Collectors.toList());
-			this.authenticationEntryPoint = super.authenticationEntryPoint(authenticationEntryPointProvider.stream().collect(Collectors.toList()));
-			this.authenticationSuccessHandler = super.authenticationSuccessHandler(authenticationListeners, authenticationSuccessHandlerProvider.stream().collect(Collectors.toList()));
+			this.authenticationEntryPoint = super.authenticationEntryPoint(authcProperties.getPathPattern(), authenticationEntryPointProvider.stream().collect(Collectors.toList()));
+			this.authenticationSuccessHandler = super.authenticationSuccessHandler(authcProperties, authenticationListeners, authenticationSuccessHandlerProvider.stream().collect(Collectors.toList()));
 			this.authenticationFailureHandler = super.authenticationFailureHandler(authenticationListeners, authenticationFailureHandlerProvider.stream().collect(Collectors.toList()));
+			this.authenticationManager = authenticationManagerProvider.getIfAvailable();
+			this.localeContextFilter = localeContextProvider.getIfAvailable();
+			this.logoutHandler = super.logoutHandler(logoutHandlerProvider.stream().collect(Collectors.toList()));
+			this.logoutSuccessHandler = logoutSuccessHandlerProvider.getIfAvailable();
 			this.objectMapper = objectMapperProvider.getIfAvailable();
    			this.rememberMeServices = rememberMeServicesProvider.getIfAvailable();
    			this.sessionAuthenticationStrategy = sessionAuthenticationStrategyProvider.getIfAvailable();
@@ -116,9 +133,9 @@ public class SecurityLineFilterConfiguration {
 			 */
 			PropertyMapper map = PropertyMapper.get().alwaysApplyingWhenNonNull();
 
-			map.from(authcProperties.getSessionMgt().isAllowSessionCreation()).to(authenticationFilter::setAllowSessionCreation);
+			map.from(bizProperties.getSession().isAllowSessionCreation()).to(authenticationFilter::setAllowSessionCreation);
 
-			map.from(authenticationManagerBean()).to(authenticationFilter::setAuthenticationManager);
+			map.from(authenticationManager).to(authenticationFilter::setAuthenticationManager);
 			map.from(authenticationSuccessHandler).to(authenticationFilter::setAuthenticationSuccessHandler);
 			map.from(authenticationFailureHandler).to(authenticationFilter::setAuthenticationFailureHandler);
 
@@ -130,28 +147,29 @@ public class SecurityLineFilterConfiguration {
 	        return authenticationFilter;
 	    }
 
-		@Override
-		public void configure(HttpSecurity http) throws Exception {
-
+		@Bean
+		@Order(SecurityProperties.DEFAULT_FILTER_ORDER + 5)
+		public SecurityFilterChain lineSecurityFilterChain(HttpSecurity http) throws Exception {
+			// new DefaultSecurityFilterChain(new AntPathRequestMatcher(authcProperties.getPathPattern()), localeContextFilter, authenticationProcessingFilter());
 			http.antMatcher(authcProperties.getPathPattern())
-				.exceptionHandling()
-	        	.authenticationEntryPoint(authenticationEntryPoint)
-	        	.and()
-	        	.httpBasic()
-	        	.disable()
-	        	.addFilterBefore(localeContextFilter, UsernamePasswordAuthenticationFilter.class)
-   	        	.addFilterBefore(authenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
+					// 请求鉴权配置
+					.authorizeRequests(this.authorizeRequestsCustomizer())
+					// 异常处理
+					.exceptionHandling((configurer) -> configurer.authenticationEntryPoint(authenticationEntryPoint))
+					// 请求头配置
+					.headers(this.headersCustomizer(bizProperties.getHeaders()))
+					// Request 缓存配置
+					.requestCache(this.requestCacheCustomizer())
+					// Session 注销配置
+					.logout(this.logoutCustomizer(bizProperties.getLogout(), logoutHandler, logoutSuccessHandler))
+					// 禁用 Http Basic
+					.httpBasic((basic) -> basic.disable())
+					// Filter 配置
+					.addFilterBefore(localeContextFilter, UsernamePasswordAuthenticationFilter.class)
+					.addFilterBefore(authenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
 
-   	    	super.configure(http, authcProperties.getCors());
-   	    	super.configure(http, authcProperties.getCsrf());
-   	    	super.configure(http, authcProperties.getHeaders());
-	    	super.configure(http);
+			return http.build();
 		}
-
-		@Override
-	    public void configure(WebSecurity web) throws Exception {
-	    	super.configure(web);
-	    }
 
 	}
 
