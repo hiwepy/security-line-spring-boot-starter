@@ -17,11 +17,12 @@ package org.springframework.security.boot.line;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.support.MessageSourceAccessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {{ @link SpringSecurityLineMessageSource }}.
+ * Unit tests for {@link SpringSecurityLineMessageSource}.
  *
  * @author [@Loong Wan](https://github.com/loong10k)
  * @since 1.0.0
@@ -34,5 +35,20 @@ class SpringSecurityLineMessageSourceTest {
     void testInstantiation() {
         SpringSecurityLineMessageSource instance = new SpringSecurityLineMessageSource();
         assertThat(instance).isNotNull();
+    }
+
+    @Test
+    @DisplayName("getAccessor returns a non-null MessageSourceAccessor")
+    void testGetAccessor() {
+        MessageSourceAccessor accessor = SpringSecurityLineMessageSource.getAccessor();
+        assertThat(accessor).isNotNull();
+    }
+
+    @Test
+    @DisplayName("getAccessor returns a new instance each time")
+    void testGetAccessorReturnsNewInstance() {
+        MessageSourceAccessor accessor1 = SpringSecurityLineMessageSource.getAccessor();
+        MessageSourceAccessor accessor2 = SpringSecurityLineMessageSource.getAccessor();
+        assertThat(accessor1).isNotSameAs(accessor2);
     }
 }

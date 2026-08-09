@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {{ @link LineAccessTokenLoginRequest }}.
+ * Unit tests for {@link LineAccessTokenLoginRequest}.
  *
  * @author [@Loong Wan](https://github.com/loong10k)
  * @since 1.0.0
@@ -32,7 +32,38 @@ class LineAccessTokenLoginRequestTest {
     @Test
     @DisplayName("Instance can be created via constructor")
     void testInstantiation() {
+        LineAccessTokenLoginRequest instance = new LineAccessTokenLoginRequest("token123");
+        assertThat(instance).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Constructor with null accessToken")
+    void testConstructorWithNull() {
         LineAccessTokenLoginRequest instance = new LineAccessTokenLoginRequest(null);
         assertThat(instance).isNotNull();
+        assertThat(instance.getAccessToken()).isNull();
+    }
+
+    @Test
+    @DisplayName("getAccessToken returns the token set in constructor")
+    void testGetAccessToken() {
+        LineAccessTokenLoginRequest instance = new LineAccessTokenLoginRequest("token123");
+        assertThat(instance.getAccessToken()).isEqualTo("token123");
+    }
+
+    @Test
+    @DisplayName("setAccessToken updates the token")
+    void testSetAccessToken() {
+        LineAccessTokenLoginRequest instance = new LineAccessTokenLoginRequest("token123");
+        instance.setAccessToken("newToken456");
+        assertThat(instance.getAccessToken()).isEqualTo("newToken456");
+    }
+
+    @Test
+    @DisplayName("setAccessToken with null")
+    void testSetAccessTokenNull() {
+        LineAccessTokenLoginRequest instance = new LineAccessTokenLoginRequest("token123");
+        instance.setAccessToken(null);
+        assertThat(instance.getAccessToken()).isNull();
     }
 }

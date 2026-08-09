@@ -31,7 +31,7 @@ import org.springframework.security.boot.line.exception.LineAccessTokenNotFoundE
 import org.springframework.security.boot.utils.WebUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import java.io.IOException;
 
@@ -56,7 +56,7 @@ public class LineAccessTokenAuthenticationProcessingFilter extends Authenticatio
     private OkHttpClient okhttp3Client;
 	
     public LineAccessTokenAuthenticationProcessingFilter(ObjectMapper objectMapper, OkHttpClient okhttp3Client) {
-    	super(new AntPathRequestMatcher("/login/line"));
+    	super(PathPatternRequestMatcher.pathPattern("/login/line"));
     	this.objectMapper = objectMapper;
     	this.okhttp3Client = okhttp3Client;
     }

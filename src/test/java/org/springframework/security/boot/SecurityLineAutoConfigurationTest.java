@@ -18,11 +18,20 @@ package org.springframework.security.boot;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.boot.biz.userdetails.JwtPayloadRepository;
+import org.springframework.security.boot.biz.userdetails.UserDetailsServiceAdapter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
- * Unit tests for {{ @link SecurityLineAutoConfiguration }}.
+ * Unit tests for {@link SecurityLineAutoConfiguration}.
  *
  * <p>Verifies the auto-configuration activates under the expected conditions
  * and exposes its declared beans.</p>
@@ -45,7 +54,7 @@ class SecurityLineAutoConfigurationTest {
     @Test
     @DisplayName("Auto-configuration loads when 'spring.security.line.enabled=true'")
     void testLoadsWhenEnabledPropertySet() {
-        runner.withUserConfiguration(SecurityLineAutoConfiguration.class)
+        runner.withUserConfiguration(TestDependenciesConfiguration.class, SecurityLineAutoConfiguration.class)
                 .withPropertyValues("spring.security.line.enabled=true")
                 .run(context -> assertThat(context).hasSingleBean(SecurityLineAutoConfiguration.class));
     }
@@ -53,7 +62,24 @@ class SecurityLineAutoConfigurationTest {
     @Test
     @DisplayName("Auto-configuration is absent when property is not set")
     void testNotLoadedWhenPropertyAbsent() {
-        runner.withUserConfiguration(SecurityLineAutoConfiguration.class)
+        runner.withUserConfiguration(TestDependenciesConfiguration.class, SecurityLineAutoConfiguration.class)
                 .run(context -> assertThat(context).doesNotHaveBean(SecurityLineAutoConfiguration.class));
+    }
+
+    /**
+     * Provides stub beans required by SecurityLineAutoConfiguration.
+     */
+    @Configuration
+    static class TestDependenciesConfiguration {
+
+        @Bean
+        public JwtPayloadRepository jwtPayloadRepository() {
+            return mock(JwtPayloadRepository.class);
+        }
+
+        @Bean
+        public UserDetailsServiceAdapter userDetailsServiceAdapter() {
+            return mock(UserDetailsServiceAdapter.class);
+        }
     }
 }

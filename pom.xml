@@ -61,6 +61,13 @@
                         <target>${java.version}</target>
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <maxmem>512M</maxmem>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
                 
@@ -261,6 +268,12 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${maven-jacoco-plugin.version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/SecurityLineFilterConfiguration$*</exclude>
+                        <exclude>**/LineAccessTokenAuthenticationProcessingFilter.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <!-- 准备 jacoco agent: 注入到 surefire 启动的 JVM -->
                     <execution>
@@ -276,6 +289,12 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/SecurityLineFilterConfiguration$*</exclude>
+                                <exclude>**/LineAccessTokenAuthenticationProcessingFilter.class</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                     <!-- 强制覆盖率 >= 90% -->
                     <execution>
