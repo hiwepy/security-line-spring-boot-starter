@@ -34,6 +34,9 @@ public class SpringSecurityLineMessageSource extends ResourceBundleMessageSource
 	// ~ Methods
 	// ========================================================================================================
 
+	/** Returns the accessor.
+	 * @return the result
+	 */
 	public static MessageSourceAccessor getAccessor() {
 		return new MessageSourceAccessor(new SpringSecurityLineMessageSource());
 	}

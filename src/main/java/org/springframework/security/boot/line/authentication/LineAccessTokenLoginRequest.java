@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Line AccessToken 登录认证绑定的参数对象Model
+ * Line AccessToken loginauthenticationbinding objectModel
  * 
  * @author [@Loong Wan](https://github.com/loong10k)
  */
@@ -20,10 +20,16 @@ public class LineAccessTokenLoginRequest {
 		this.accessToken = accessToken;
 	}
 
+	/** Returns the access token.
+	 * @return the result
+	 */
 	public String getAccessToken() {
 		return accessToken;
 	}
 
+	/** Sets the access token.
+	 * @param accessToken the accessToken
+	 */
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}

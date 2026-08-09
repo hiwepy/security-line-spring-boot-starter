@@ -19,6 +19,11 @@ import org.springframework.security.boot.biz.authentication.AbstractAuthenticati
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
+/** Authentication token for Line Access Token authentication.
+ *
+ * @author [@Loong Wan](https://github.com/loong10k)
+ * @since 1.0.0
+ */
 
 @SuppressWarnings("serial")
 public class LineAccessTokenAuthenticationToken extends AbstractAuthenticationToken {
@@ -36,16 +41,24 @@ public class LineAccessTokenAuthenticationToken extends AbstractAuthenticationTo
     }
 
     @Override
+    /** Returns the credentials.
+     * @return the result
+     */
     public Object getCredentials() {
         return accessToken;
     }
 
     @Override
+    /** Erases the sensitive credentials from this token.
+     */
     public void eraseCredentials() {        
         super.eraseCredentials();
         this.accessToken = null;
     }
 	
+	/** Returns the access token.
+	 * @return the result
+	 */
 	public String getAccessToken() {
 		return accessToken;
 	}

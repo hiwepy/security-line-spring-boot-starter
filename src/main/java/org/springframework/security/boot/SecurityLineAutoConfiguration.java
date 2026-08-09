@@ -12,6 +12,11 @@ import org.springframework.security.boot.line.authentication.LineAuthenticationP
 import org.springframework.security.boot.line.authentication.LineMatchedAuthenticationEntryPoint;
 import org.springframework.security.boot.line.authentication.LineMatchedAuthenticationFailureHandler;
 import org.springframework.security.boot.line.authentication.LineMatchedAuthenticationSuccessHandler;
+/** Auto-configuration for Security Line.
+ *
+ * @author [@Loong Wan](https://github.com/loong10k)
+ * @since 1.0.0
+ */
 
 @Configuration
 @AutoConfigureBefore(SecurityBizAutoConfiguration.class)
@@ -21,6 +26,9 @@ public class SecurityLineAutoConfiguration {
 	
 	@Bean
 	@ConditionalOnMissingBean
+	/** Creates a line matched authentication entry point bean.
+	 * @return the result
+	 */
 	public LineMatchedAuthenticationEntryPoint lineMatchedAuthenticationEntryPoint() {
 		return new LineMatchedAuthenticationEntryPoint();
 	}
@@ -39,6 +47,10 @@ public class SecurityLineAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
+	/** Creates a line authentication provider bean.
+	 * @param userDetailsService the userDetailsService
+	 * @return the result
+	 */
 	public LineAuthenticationProvider lineAuthenticationProvider(UserDetailsServiceAdapter userDetailsService) {
 		return new LineAuthenticationProvider(userDetailsService);
 	}

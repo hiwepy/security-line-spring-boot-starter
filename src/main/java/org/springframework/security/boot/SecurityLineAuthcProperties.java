@@ -21,6 +21,11 @@ import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.boot.biz.property.SecurityAuthcProperties;
 import org.springframework.security.boot.line.authentication.LineAccessTokenAuthenticationProcessingFilter;
+/** Configuration properties for Line Authc.
+ *
+ * @author [@Loong Wan](https://github.com/loong10k)
+ * @since 1.0.0
+ */
 
 @ConfigurationProperties(SecurityLineAuthcProperties.PREFIX)
 @Getter

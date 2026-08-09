@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Line AccessToken 认证 (authentication)成功回调器：讲认证信息写回前端
+ * Line AccessToken authentication (authentication)success：authenticationinformation
  * @author [@Loong Wan](https://github.com/loong10k)
  */
 public class LineMatchedAuthenticationSuccessHandler implements MatchedAuthenticationSuccessHandler {
@@ -36,11 +36,20 @@ public class LineMatchedAuthenticationSuccessHandler implements MatchedAuthentic
 	}
 
 	@Override
+	/** Indicates whether this provider supports the given authentication class.
+	 * @param authentication the authentication
+	 * @return the result
+	 */
 	public boolean supports(Authentication authentication) {
 		return SubjectUtils.isAssignableFrom(authentication.getClass(), LineAccessTokenAuthenticationToken.class);
 	}
 
     @Override
+    /** Called when an authentication attempt succeeds.
+     * @param request the request
+     * @param response the response
+     * @param authentication the authentication
+     */
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
 
@@ -61,18 +70,30 @@ public class LineMatchedAuthenticationSuccessHandler implements MatchedAuthentic
 		JSON.writeTo(response.getOutputStream(), AuthResponse.success(message, profilePayload));
     }
 
+	/** Returns the payload repository.
+	 * @return the result
+	 */
 	public JwtPayloadRepository getPayloadRepository() {
 		return payloadRepository;
 	}
 
+	/** Sets the payload repository.
+	 * @param payloadRepository the payloadRepository
+	 */
 	public void setPayloadRepository(JwtPayloadRepository payloadRepository) {
 		this.payloadRepository = payloadRepository;
 	}
 
+	/** Returns whether the check expiry is enabled.
+	 * @return the result
+	 */
 	public boolean isCheckExpiry() {
 		return checkExpiry;
 	}
 
+	/** Sets the check expiry.
+	 * @param checkExpiry the checkExpiry
+	 */
 	public void setCheckExpiry(boolean checkExpiry) {
 		this.checkExpiry = checkExpiry;
 	}

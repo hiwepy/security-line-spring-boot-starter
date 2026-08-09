@@ -22,13 +22,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Line AccessToken 认证请求失败后的处理实现
+ * Line AccessToken Implementation of authentication failure handling
  */
 public class LineMatchedAuthenticationFailureHandler implements MatchedAuthenticationFailureHandler {
 
 	protected MessageSourceAccessor messages = SpringSecurityLineMessageSource.getAccessor();
 
 	@Override
+	/** Indicates whether this provider supports the given authentication class.
+	 * @param e the e
+	 * @return the result
+	 */
 	public boolean supports(AuthenticationException e) {
 		return SubjectUtils.isAssignableFrom(e.getClass(), LineAccessTokenExpiredException.class,
 				LineAccessTokenIncorrectException.class, LineAccessTokenInvalidException.class,
@@ -36,6 +40,11 @@ public class LineMatchedAuthenticationFailureHandler implements MatchedAuthentic
 	}
 
 	@Override
+	/** Called when an authentication attempt fails.
+	 * @param request the request
+	 * @param response the response
+	 * @param e the e
+	 */
 	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
 			AuthenticationException e) throws IOException, ServletException {
 

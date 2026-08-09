@@ -44,10 +44,20 @@ import java.util.stream.Collectors;
 @AutoConfigureBefore(name = { 
 	"org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration"
 })
+/** Configuration for Line authentication filter chain.
+ *
+ * @author [@Loong Wan](https://github.com/loong10k)
+ * @since 1.0.0
+ */
 @ConditionalOnWebApplication
 @ConditionalOnProperty(prefix = SecurityLineProperties.PREFIX, value = "enabled", havingValue = "true")
 @EnableConfigurationProperties({ SecurityLineProperties.class, SecurityLineAuthcProperties.class, SecurityBizProperties.class, ServerProperties.class })
 public class SecurityLineFilterConfiguration {
+	/** Adapter implementation for Line Web Security Customizer.
+	 *
+	 * @author [@Loong Wan](https://github.com/loong10k)
+	 * @since 1.0.0
+	 */
 	
 	@Configuration
 	@EnableConfigurationProperties({ SecurityLineProperties.class, SecurityLineAuthcProperties.class, SecurityBizProperties.class })
@@ -113,12 +123,15 @@ public class SecurityLineFilterConfiguration {
 		}
 
 		
+		/** Creates and configures the authentication processing filter.
+		 * @return the result
+		 */
 		public LineAccessTokenAuthenticationProcessingFilter authenticationProcessingFilter() throws Exception {
 	    	
 			LineAccessTokenAuthenticationProcessingFilter authenticationFilter = new LineAccessTokenAuthenticationProcessingFilter(this.objectMapper, this.okhttp3Client);
 			
 			/**
-			 * 批量设置参数
+			 * 
 			 */
 			PropertyMapper map = PropertyMapper.get().alwaysApplyingWhenNonNull();
 			
@@ -138,6 +151,10 @@ public class SecurityLineFilterConfiguration {
 
 		@Bean
 		@Order(SecurityProperties.DEFAULT_FILTER_ORDER + 5)
+		/** Configures the line security filter chain.
+		 * @param http the http
+		 * @return the result
+		 */
 		public SecurityFilterChain lineSecurityFilterChain(HttpSecurity http) throws Exception {
 			http.securityMatcher(authcProperties.getPathPattern())
 					.exceptionHandling(configurer -> {
@@ -158,6 +175,9 @@ public class SecurityLineFilterConfiguration {
 		}
 
 		@Override
+		/** Customizes the web security configuration.
+		 * @param web the web
+		 */
 		public void customize(WebSecurity web) {
 			super.customize(web);
 		}

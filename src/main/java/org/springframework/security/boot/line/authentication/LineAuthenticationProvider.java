@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.util.Assert;
 
 /**
- * Line 认证 (authentication) 处理器
+ * Line authentication (authentication) processing
  */
 @Slf4j
 public class LineAuthenticationProvider implements AuthenticationProvider {
@@ -28,11 +28,19 @@ public class LineAuthenticationProvider implements AuthenticationProvider {
     }
 
     @Override
+    /** Indicates whether this provider supports the given authentication class.
+     * @param authentication the authentication
+     * @return the result
+     */
     public boolean supports(Class<?> authentication) {
         return (LineAccessTokenAuthenticationToken.class.isAssignableFrom(authentication));
     }
     
     @Override
+    /** Performs authentication for the given authentication request.
+     * @param authentication the authentication
+     * @return the result
+     */
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         
     	Assert.notNull(authentication, "No authentication data provided");
@@ -62,14 +70,23 @@ public class LineAuthenticationProvider implements AuthenticationProvider {
         return authenticationToken;
     }
 
+    /** Sets the user details checker.
+     * @param userDetailsChecker the userDetailsChecker
+     */
     public void setUserDetailsChecker(UserDetailsChecker userDetailsChecker) {
 		this.userDetailsChecker = userDetailsChecker;
 	}
 
+	/** Returns the user details checker.
+	 * @return the result
+	 */
 	public UserDetailsChecker getUserDetailsChecker() {
 		return userDetailsChecker;
 	}
 
+	/** Returns the user details service.
+	 * @return the result
+	 */
 	public UserDetailsServiceAdapter getUserDetailsService() {
 		return userDetailsService;
 	}

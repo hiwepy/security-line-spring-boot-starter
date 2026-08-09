@@ -36,7 +36,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import java.io.IOException;
 
 /**
- * Line AccessToken 登录授权 (authorization)过滤器
+ * Line AccessToken loginauthorization (authorization)filter
  */
 @Slf4j
 public class LineAccessTokenAuthenticationProcessingFilter extends AuthenticationProcessingFilter {
@@ -62,6 +62,11 @@ public class LineAccessTokenAuthenticationProcessingFilter extends Authenticatio
     }
 
     @Override
+    /** Attempts to authenticate the incoming request.
+     * @param request the request
+     * @param response the response
+     * @return the result
+     */
     public Authentication doAttemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException, IOException, ServletException {
  
@@ -116,20 +121,34 @@ public class LineAccessTokenAuthenticationProcessingFilter extends Authenticatio
 
     }
     
+	/** Extracts the access token parameter from the HTTP request.
+	 * @param request the request
+	 * @return the result
+	 */
 	protected String obtainAccessToken(HttpServletRequest request) {
 		// 从参数中获取token
 		String token = request.getParameter(getAuthorizationParamName());
 		return token;
 	}
 
+	/** Sets the details property on the authentication request object.
+	 * @param request the request
+	 * @param authRequest the authRequest
+	 */
 	protected void setDetails(HttpServletRequest request, AbstractAuthenticationToken authRequest) {
 		authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
 	}
 	
+	/** Returns the authorization param name.
+	 * @return the result
+	 */
 	public String getAuthorizationParamName() {
 		return authorizationParamName;
 	}
 
+	/** Sets the authorization param name.
+	 * @param authorizationParamName the authorizationParamName
+	 */
 	public void setAuthorizationParamName(String authorizationParamName) {
 		this.authorizationParamName = authorizationParamName;
 	}

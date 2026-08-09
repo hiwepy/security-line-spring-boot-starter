@@ -35,12 +35,21 @@ import org.springframework.security.core.AuthenticationException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+/** Matched authentication entry point for Line authentication failures.
+ *
+ * @author [@Loong Wan](https://github.com/loong10k)
+ * @since 1.0.0
+ */
 
 public class LineMatchedAuthenticationEntryPoint implements MatchedAuthenticationEntryPoint {
 
 	protected MessageSourceAccessor messages = SpringSecurityLineMessageSource.getAccessor();
 
 	@Override
+	/** Indicates whether this provider supports the given authentication class.
+	 * @param e the e
+	 * @return the result
+	 */
 	public boolean supports(AuthenticationException e) {
 		return SubjectUtils.isAssignableFrom(e.getClass(), LineAccessTokenExpiredException.class,
 				LineAccessTokenIncorrectException.class, LineAccessTokenInvalidException.class,
@@ -48,6 +57,11 @@ public class LineMatchedAuthenticationEntryPoint implements MatchedAuthenticatio
 	}
 
 	@Override
+	/** Commences an authentication scheme.
+	 * @param request the request
+	 * @param response the response
+	 * @param e the e
+	 */
 	public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException e)
 			throws IOException, ServletException {
 

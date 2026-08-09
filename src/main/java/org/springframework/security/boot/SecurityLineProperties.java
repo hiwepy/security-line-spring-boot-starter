@@ -4,6 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+/** Configuration properties for Line.
+ *
+ * @author [@Loong Wan](https://github.com/loong10k)
+ * @since 1.0.0
+ */
 
 @ConfigurationProperties(prefix = SecurityLineProperties.PREFIX)
 @Getter
