@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 /** Matched authentication entry point for Line authentication failures.
  *
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  * @since 1.0.0
  */
 
