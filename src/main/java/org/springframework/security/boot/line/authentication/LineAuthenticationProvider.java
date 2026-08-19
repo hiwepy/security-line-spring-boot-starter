@@ -15,6 +15,8 @@ import org.springframework.util.Assert;
 
 /**
  * Line authentication (authentication) processing
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
  */
 @Slf4j
 public class LineAuthenticationProvider implements AuthenticationProvider {
@@ -23,6 +25,11 @@ public class LineAuthenticationProvider implements AuthenticationProvider {
     private final UserDetailsServiceAdapter userDetailsService;
     private UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
     
+    /**
+     * Constructs a new line authentication provider instance.
+     *
+     * @param userDetailsService the user details service
+     */
     public LineAuthenticationProvider(final UserDetailsServiceAdapter userDetailsService) {
         this.userDetailsService = userDetailsService;
     }

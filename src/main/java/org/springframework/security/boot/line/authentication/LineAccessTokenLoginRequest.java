@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Line AccessToken loginauthenticationbinding objectModel
  * 
  * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
  */
 public class LineAccessTokenLoginRequest {
 
@@ -15,6 +16,10 @@ public class LineAccessTokenLoginRequest {
 	 */
 	private String accessToken;
 
+	/**
+	 * Constructs a new line access token login request instance.
+	 *
+	 */
 	@JsonCreator
 	public LineAccessTokenLoginRequest(@JsonProperty("accessToken") String accessToken) {
 		this.accessToken = accessToken;

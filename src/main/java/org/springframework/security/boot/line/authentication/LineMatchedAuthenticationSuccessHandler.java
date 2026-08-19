@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Line AccessToken authentication (authentication)success：authenticationinformation
  * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
  */
 public class LineMatchedAuthenticationSuccessHandler implements MatchedAuthenticationSuccessHandler {
 
@@ -31,6 +32,11 @@ public class LineMatchedAuthenticationSuccessHandler implements MatchedAuthentic
 	private JwtPayloadRepository payloadRepository;
 	private boolean checkExpiry = false;
 
+	/**
+	 * Constructs a new line matched authentication success handler instance.
+	 *
+	 * @param payloadRepository the payload repository
+	 */
 	public LineMatchedAuthenticationSuccessHandler(JwtPayloadRepository payloadRepository) {
 		this.setPayloadRepository(payloadRepository);
 	}

@@ -21,12 +21,17 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 /**
  * TODO
  * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
  */
 public class SpringSecurityLineMessageSource extends ResourceBundleMessageSource {
 	
 	// ~ Constructors
 	// ===================================================================================================
 
+	/**
+	 * Constructs a new spring security line message source instance.
+	 *
+	 */
 	public SpringSecurityLineMessageSource() {
 		setBasename("org.springframework.security.boot.line.messages");
 	}

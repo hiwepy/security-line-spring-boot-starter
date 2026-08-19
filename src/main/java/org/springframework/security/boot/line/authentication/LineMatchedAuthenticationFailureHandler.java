@@ -23,6 +23,8 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Line AccessToken Implementation of authentication failure handling
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
  */
 public class LineMatchedAuthenticationFailureHandler implements MatchedAuthenticationFailureHandler {
 

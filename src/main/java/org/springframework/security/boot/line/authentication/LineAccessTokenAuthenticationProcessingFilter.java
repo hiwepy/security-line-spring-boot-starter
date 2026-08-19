@@ -37,6 +37,8 @@ import java.io.IOException;
 
 /**
  * Line AccessToken loginauthorization (authorization)filter
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
  */
 @Slf4j
 public class LineAccessTokenAuthenticationProcessingFilter extends AuthenticationProcessingFilter {
@@ -55,6 +57,12 @@ public class LineAccessTokenAuthenticationProcessingFilter extends Authenticatio
 	private String authorizationParamName = AUTHORIZATION_PARAM;
     private OkHttpClient okhttp3Client;
 	
+    /**
+     * Constructs a new line access token authentication processing filter instance.
+     *
+     * @param objectMapper the object mapper
+     * @param okhttp3Client the okhttp3 client
+     */
     public LineAccessTokenAuthenticationProcessingFilter(ObjectMapper objectMapper, OkHttpClient okhttp3Client) {
     	super(PathPatternRequestMatcher.pathPattern("/login/line"));
     	this.objectMapper = objectMapper;

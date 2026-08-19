@@ -30,11 +30,24 @@ public class LineAccessTokenAuthenticationToken extends AbstractAuthenticationTo
 
 	private String accessToken;
     
+    /**
+     * Constructs a new line access token authentication token instance.
+     *
+     * @param principal the principal
+     * @param accessToken the access token
+     */
     public LineAccessTokenAuthenticationToken( Object principal, String accessToken) {
         super(principal);
         this.accessToken = accessToken;
     }
 
+    /**
+     * Constructs a new line access token authentication token instance.
+     *
+     * @param principal the principal
+     * @param accessToken the access token
+     * @param authorities the authorities
+     */
     public LineAccessTokenAuthenticationToken( Object principal, String accessToken, Collection<? extends GrantedAuthority> authorities) {
         super(principal, null, authorities);
         this.accessToken = accessToken;

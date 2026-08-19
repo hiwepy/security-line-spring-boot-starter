@@ -19,6 +19,8 @@ import org.springframework.security.boot.biz.exception.AuthenticationTokenNotFou
 
 /**
  *	Line AccessToken Not Found Exception
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
  */
 @SuppressWarnings("serial")
 public class LineAccessTokenNotFoundException extends AuthenticationTokenNotFoundException {

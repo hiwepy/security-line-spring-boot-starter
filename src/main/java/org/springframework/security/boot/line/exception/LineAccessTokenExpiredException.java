@@ -20,6 +20,7 @@ import org.springframework.security.boot.biz.exception.AuthenticationTokenExpire
 /**
  * Line AccessToken Expired Exception
  * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
  */
 @SuppressWarnings("serial")
 public class LineAccessTokenExpiredException extends AuthenticationTokenExpiredException {

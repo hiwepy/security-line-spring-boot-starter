@@ -33,12 +33,23 @@ public class SecurityLineAutoConfiguration {
 		return new LineMatchedAuthenticationEntryPoint();
 	}
 
+	/**
+	 * line Matched Authentication Failure Handler.
+	 *
+	 * @return the result
+	 */
 	@Bean
 	@ConditionalOnMissingBean
 	public LineMatchedAuthenticationFailureHandler lineMatchedAuthenticationFailureHandler() {
 		return new LineMatchedAuthenticationFailureHandler();
 	}
 	
+	/**
+	 * line Matched Authentication Success Handler.
+	 *
+	 * @param payloadRepository the payload repository
+	 * @return the result
+	 */
 	@Bean
 	@ConditionalOnMissingBean
 	public LineMatchedAuthenticationSuccessHandler lineMatchedAuthenticationSuccessHandler(JwtPayloadRepository payloadRepository) {
